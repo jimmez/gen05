@@ -80,4 +80,58 @@
       "tulips", "rappers", "undercover agents", "Christians", "criminals", "students",
       "teachers", "baristas", "psychiatrists", "Foodora couriers", "cashiers", "architects",
       "Hindus", "Asians", "immigrants", "doctors", "handymen", "politicians", "bus drivers",
-      "cab drivers", "
+      "cab drivers", "pilots"
+    ];
+
+    let soundOn = true;
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateIdea() {
+      const idea = `It's ${getRandomItem(things)} for ${getRandomItem(groups)}.`;
+      document.getElementById('output').textContent = idea;
+      if (soundOn) speakIdea(idea);
+    }
+
+    function speakIdea(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = 'en-US';
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v =>
+        v.name.includes("Samantha") || v.name.includes("Alexa") || v.name.includes("Google US English")
+      );
+      if (preferred) msg.voice = preferred;
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(msg);
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      document.getElementById('soundStatus').textContent = soundOn ? '🔊' : '🔇';
+      speechSynthesis.cancel();
+    }
+
+    // Swipe detection
+    let touchStartX = null;
+
+    document.getElementById('clickArea').addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.getElementById('clickArea').addEventListener('touchend', function(e) {
+      if (touchStartX === null) return;
+      const deltaX = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(deltaX) > 50) toggleSound(); // Swipe left or right
+      touchStartX = null;
+    });
+
+    // Ensure voices load
+    window.speechSynthesis.onvoiceschanged = () => {};
+  </script>
+
+</body>
+</html>
