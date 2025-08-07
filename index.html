@@ -39,16 +39,36 @@
       word-wrap: break-word;
     }
 
-    #soundStatus {
+    #controls {
       position: absolute;
       top: 10px;
-      left: 10px;
-      font-size: 7vw;
-      user-select: none;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.5);
+    }
+
+    input[type="number"] {
+      width: 60px;
+      font-size: 16px;
+      padding: 2px;
+      text-align: center;
     }
 
     @media (min-width: 768px) {
-      .intro, #output, #soundStatus {
+      .intro, #output {
         font-size: 28px;
       }
     }
@@ -57,9 +77,15 @@
 <body>
 
   <div id="clickArea" onclick="generateIdea()">
-    <div id="soundStatus">🔊</div>
     <div class="intro">Tap anywhere to generate an idea. Swipe to toggle sound.</div>
     <div id="output">Your idea will appear here.</div>
+  </div>
+
+  <div id="controls">
+    <label><input type="checkbox" id="soundToggle" checked> Sound</label>
+    <label><input type="checkbox" id="autoToggle"> Random Time</label>
+    <label>Min (s): <input type="number" id="minSeconds" value="5" min="1"></label>
+    <label>Max (s): <input type="number" id="maxSeconds" value="10" min="1"></label>
   </div>
 
   <script>
@@ -84,6 +110,24 @@
     ];
 
     let soundOn = true;
+    let autoPlay = false;
+    let timer = null;
+
+    const soundToggle = document.getElementById('soundToggle');
+    const autoToggle = document.getElementById('autoToggle');
+    const minSecondsInput = document.getElementById('minSeconds');
+    const maxSecondsInput = document.getElementById('maxSeconds');
+
+    soundToggle.addEventListener('change', () => {
+      soundOn = soundToggle.checked;
+      speechSynthesis.cancel();
+    });
+
+    autoToggle.addEventListener('change', () => {
+      autoPlay = autoToggle.checked;
+      if (autoPlay) startAutoPlay();
+      else stopAutoPlay();
+    });
 
     function getRandomItem(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
@@ -98,38 +142,48 @@
     function speakIdea(text) {
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = 'en-US';
-
       const voices = window.speechSynthesis.getVoices();
       const preferred = voices.find(v =>
         v.name.includes("Samantha") || v.name.includes("Alexa") || v.name.includes("Google US English")
       );
       if (preferred) msg.voice = preferred;
-
       speechSynthesis.cancel();
       speechSynthesis.speak(msg);
     }
 
-    function toggleSound() {
-      soundOn = !soundOn;
-      document.getElementById('soundStatus').textContent = soundOn ? '🔊' : '🔇';
-      speechSynthesis.cancel();
+    function startAutoPlay() {
+      stopAutoPlay(); // Clear any existing timer
+
+      const min = parseInt(minSecondsInput.value, 10) * 1000;
+      const max = parseInt(maxSecondsInput.value, 10) * 1000;
+      const delay = Math.floor(Math.random() * (max - min + 1)) + min;
+
+      timer = setTimeout(() => {
+        generateIdea();
+        if (autoPlay) startAutoPlay(); // Continue auto-play
+      }, delay);
+    }
+
+    function stopAutoPlay() {
+      clearTimeout(timer);
     }
 
     // Swipe detection
     let touchStartX = null;
-
     document.getElementById('clickArea').addEventListener('touchstart', function(e) {
       touchStartX = e.changedTouches[0].screenX;
     });
-
     document.getElementById('clickArea').addEventListener('touchend', function(e) {
       if (touchStartX === null) return;
       const deltaX = e.changedTouches[0].screenX - touchStartX;
-      if (Math.abs(deltaX) > 50) toggleSound(); // Swipe left or right
+      if (Math.abs(deltaX) > 50) {
+        soundOn = !soundOn;
+        soundToggle.checked = soundOn;
+        speechSynthesis.cancel();
+      }
       touchStartX = null;
     });
 
-    // Ensure voices load
     window.speechSynthesis.onvoiceschanged = () => {};
   </script>
 
