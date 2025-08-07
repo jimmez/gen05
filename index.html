@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Startup Idea Generator</title>
+  <title>Idea Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
@@ -16,10 +16,7 @@
 
     #clickArea {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -29,16 +26,6 @@
       cursor: pointer;
     }
 
-    h1 {
-      font-size: 6vw;
-      margin-bottom: 20px;
-    }
-
-    #output {
-      font-size: 6vw;
-      font-weight: bold;
-    }
-
     .intro {
       color: #66ccff;
       font-style: italic;
@@ -46,8 +33,22 @@
       margin-bottom: 30px;
     }
 
+    #output {
+      font-size: 6vw;
+      font-weight: bold;
+      word-wrap: break-word;
+    }
+
+    #soundStatus {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 7vw;
+      user-select: none;
+    }
+
     @media (min-width: 768px) {
-      h1, #output, .intro {
+      .intro, #output, #soundStatus {
         font-size: 28px;
       }
     }
@@ -56,8 +57,8 @@
 <body>
 
   <div id="clickArea" onclick="generateIdea()">
-    <div class="intro">Tap anywhere to generate a big business idea.</div>
-    <h1>Startup Idea Generator</h1>
+    <div id="soundStatus">🔊</div>
+    <div class="intro">Tap anywhere to generate an idea. Swipe to toggle sound.</div>
     <div id="output">Your idea will appear here.</div>
   </div>
 
@@ -79,37 +80,4 @@
       "tulips", "rappers", "undercover agents", "Christians", "criminals", "students",
       "teachers", "baristas", "psychiatrists", "Foodora couriers", "cashiers", "architects",
       "Hindus", "Asians", "immigrants", "doctors", "handymen", "politicians", "bus drivers",
-      "cab drivers", "pilots"
-    ];
-
-    function getRandomItem(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    function generateIdea() {
-      const idea = `It's ${getRandomItem(things)} for ${getRandomItem(groups)}.`;
-      document.getElementById('output').textContent = idea;
-      speakIdea(idea);
-    }
-
-    function speakIdea(text) {
-      const msg = new SpeechSynthesisUtterance(text);
-      msg.lang = 'en-US';
-
-      // Optional: try to pick a natural-sounding voice
-      const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v =>
-        v.name.includes("Samantha") || v.name.includes("Alexa") || v.name.includes("Google US English")
-      );
-      if (preferred) msg.voice = preferred;
-
-      speechSynthesis.cancel();
-      speechSynthesis.speak(msg);
-    }
-
-    // Fix voice list not being ready immediately
-    window.speechSynthesis.onvoiceschanged = () => {};
-  </script>
-
-</body>
-</html>
+      "cab drivers", "
